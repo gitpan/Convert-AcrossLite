@@ -8,7 +8,7 @@ use strict;
 use Carp;
 use vars qw($VERSION);
 
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 sub new {
     my $class = shift;
@@ -88,6 +88,423 @@ sub puz2text {
     }
 }
 
+sub get_across_down {
+    my($self) = shift;
+    my $across_hashref = get_across($self);
+    my $down_hashref = get_down($self);
+
+    return($across_hashref, $down_hashref);
+}
+
+sub get_across {
+    my($self) = shift;
+    _parse_file($self) unless $self->{is_parse};
+
+    ###################################################
+    # _parse_file will set direction, number and clue #
+    # as well as a two-dimension array for solution   # 
+    ###################################################
+    my $sol_two_ref = $self->{solution_two};
+    my @sol_two = @$sol_two_ref;
+
+    ### Get row, column, solution, length ###
+
+    ###################################################
+    # We're setting found squares to 1....
+    # We need to set them to row and col so we can
+    # do a "lookup" later. That is, given a row
+    # and col number, we need to know what the clue
+    # number is. Or maybe we need to make a key
+    # that is row/col so we can look up clue num.
+    ###################################################
+
+    ######################################################
+    # Determine which squares start with either 
+    # an across word (%across_start_squares) 
+    # or a down word (%down_start_squares). 
+    ######################################################
+    # Across
+    my $start = 1;
+    my $square_num = 0;
+    my %across_start_squares;
+    for(my $row = 0; $row < $self->{rows}; $row++) {
+        $start = 1;
+        for(my $col = 0; $col < $self->{columns}; $col++) {
+            if($sol_two[$row][$col] ne '.') {
+                if($start) {
+                    $across_start_squares{$square_num}++;
+                    $start = 0;
+                    $square_num++;
+                } else {
+                    $square_num++
+                }
+            } else {
+                $square_num++;
+                $start = 1;
+            }            
+        }
+    }
+    # Down
+    my %down_start_squares;
+    $start = 1;
+    $square_num = 0;
+    for(my $col = 0; $col < $self->{columns}; $col++) {
+        $start = 1;
+        for(my $row = 0; $row < $self->{rows}; $row++) {
+            if($sol_two[$row][$col] ne '.') {
+                if($start) {
+                    $down_start_squares{$square_num}++;
+                    $start = 0;
+                    if( $row >= $self->{rows}-1 ) {
+                        $square_num = $col+1;
+                    } else {
+                        $square_num += $self->{columns};
+                    }
+                } else {
+                    if( $row >= $self->{rows}-1 ) {
+                        $square_num = $col+1;
+                    } else {
+                        $square_num += $self->{columns};
+                    }
+                }
+            } else {
+                if( $row >= $self->{rows}-1 ) {
+                    $square_num = $col+1;
+                } else {
+                    $square_num += $self->{columns};
+                }
+                $start = 1;
+            }            
+        }
+    }
+
+    ##########################################################
+    # Go back through grid from square 0 to square 
+    # (rows x cols - 1) and set the clue number on each 
+    # sqaure that is found in the across_start_squares and
+    # down_start_square hashes from above.
+    #
+    # We create two versions....
+    # 1) Row/Col - $clue_numbers[$row][$col] = $clue_number
+    #    [0,0] to [14,14] for 15x15 ([0,0] to [rows-1,cols-1])
+    # 2) Square Num  - $clue_numbers{$square} = $clue_number
+    #    Square 0 to 224 for 15x15 (0 to row*cols-1)
+    ###########################################################
+    # Across
+    my $counter = 0;
+    my $clue_num = 1;
+    my @clue_numbers;
+    my %clue_numbers;
+    for(my $row = 0; $row < $self->{rows}; $row++) {
+        for(my $col = 0; $col < $self->{columns}; $col++) {
+            if( $across_start_squares{$counter} || $down_start_squares{$counter} ) {
+                # Hash - Square number
+                $clue_numbers{$counter} = $clue_num;
+                # Array - row/col
+                $clue_numbers[$row][$col] = $clue_num;
+                $clue_num++;
+            }
+            $counter++;
+        }
+    }
+
+    # Now get data and set hash of hashes
+    # Across
+    my $start_row = 0;         # Square number - row
+    my $start_col = 0;         # Square number - col
+    my $start_square = 0; 
+    my $length = 0;            # Length of current solution word
+    my $count = 0;             # Clue number
+    my $square = 0;            # Grid square
+    my $sol_word = '';         # Solution word
+    my $last_square = '';      # Contents of last square visited
+    my $last_square_two = '';  # Contents of two squares ago
+    my $last_col = 0;          # 0 (isn't) or 1 (is) last col ($self->{columns}-1)
+    for(my $row = 0; $row < $self->{rows}; $row++) {
+        for(my $col = 0; $col < $self->{columns}; $col++) {
+            if ( $sol_two[$row][$col] eq '.' || $col >= $self->{columns} - 1 ) {
+                # Save data
+
+                # Set vars if current square eq '.' and is in last col in row
+                if( $sol_two[$row][$col] eq '.' && $last_col ) {
+                    $square++;
+                    $last_square_two = $last_square;
+                    $last_square = '.';
+                    $last_col = 0;
+                    next;
+                }
+
+                # Set vars if current square eq '.', last_square eq '.'
+                # and we're not in last col of row
+                if( $sol_two[$row][$col] eq '.' && !$last_col && $last_square eq '.' ) { 
+                    if( $col == $self->{columns} - 1 ) {
+                        $start_row++;
+                        $start_col = 0;
+                        $last_col = 1;
+                    } else {
+                        $start_col++;
+                        $last_col = 0;
+                    } 
+                    $square++;
+                    $last_square_two = $last_square;
+                    $last_square = '.';
+                    next;
+                }
+
+                # Get last square of row
+                if( $col == $self->{columns} - 1 ) {
+                    $sol_word .= $sol_two[$row][$col];
+                    $length++;
+                    $last_col = 1;
+                } else { 
+                    $last_col = 0;
+                }
+
+                # Get key and clue num
+                my $clue_num = $clue_numbers[$start_row][$start_col];
+                next unless defined $clue_num; 
+                my $key = $clue_num;
+
+                # Store info into puzzle hash
+                $self->{across}{$key}{length} = $length;
+                $self->{across}{$key}{solution} = $sol_word;
+                $self->{across}{$key}{row} = $start_row+1;
+                $self->{across}{$key}{column} = $start_col+1;
+                $self->{across}{$key}{clue_number} = $clue_num;
+
+                # Reset variables
+                $length = 0;
+                $sol_word = '';
+                if( $col >= $self->{columns} - 1 ) {
+                    $start_row++;
+                    $start_col = 0;
+                } else {
+                    $start_col = $col + 1;
+                }
+            } else {
+                if( $last_square eq '.' && $last_square_two eq '.' && $col != 0 ) {
+                    $start_col++;
+                }
+                $sol_word .= $sol_two[$row][$col];
+                $length++;
+                $last_col = 0;
+            }
+            $square++;
+            $last_square_two = $last_square;
+            $last_square = $sol_two[$row][$col];
+        }
+    }
+
+    # Return across hash 
+    return ($self->{across});
+}
+
+
+sub get_down {
+    my($self) = shift;
+    _parse_file($self) unless $self->{is_parse};
+
+    ###################################################
+    # _parse_file will set direction, number and clue #
+    # as well as a two-dimension array for solution   # 
+    ###################################################
+    my $sol_two_ref = $self->{solution_two};
+    my @sol_two = @$sol_two_ref;
+
+    ### Get row, column, solution, length ###
+
+    ###################################################
+    # We're setting found squares to 1....
+    # We need to set them to row and col so we can
+    # do a "lookup" later. That is, given a row
+    # and col number, we need to know what the clue
+    # number is. Or maybe we need to make a key
+    # that is row/col so we can look up clue num.
+    ###################################################
+
+    ######################################################
+    # Determine which squares start with either 
+    # an across word (%across_start_squares) 
+    # or a down word (%down_start_squares). 
+    ######################################################
+    # Across
+    my $start = 1;
+    my $square_num = 0;
+    my %across_start_squares;
+    for(my $row = 0; $row < $self->{rows}; $row++) {
+        $start = 1;
+        for(my $col = 0; $col < $self->{columns}; $col++) {
+            if($sol_two[$row][$col] ne '.') {
+                if($start) {
+                    $across_start_squares{$square_num}++;
+                    $start = 0;
+                    $square_num++;
+                } else {
+                    $square_num++
+                }
+            } else {
+                $square_num++;
+                $start = 1;
+            }            
+        }
+    }
+    # Down
+    my %down_start_squares;
+    $start = 1;
+    $square_num = 0;
+    for(my $col = 0; $col < $self->{columns}; $col++) {
+        $start = 1;
+        for(my $row = 0; $row < $self->{rows}; $row++) {
+            if($sol_two[$row][$col] ne '.') {
+                if($start) {
+                    $down_start_squares{$square_num}++;
+                    $start = 0;
+                    if( $row >= $self->{rows}-1 ) {
+                        $square_num = $col+1;
+                    } else {
+                        $square_num += $self->{columns};
+                    }
+                } else {
+                    if( $row >= $self->{rows}-1 ) {
+                        $square_num = $col+1;
+                    } else {
+                        $square_num += $self->{columns};
+                    }
+                }
+            } else {
+                if( $row >= $self->{rows}-1 ) {
+                    $square_num = $col+1;
+                } else {
+                    $square_num += $self->{columns};
+                }
+                $start = 1;
+            }            
+        }
+    }
+
+
+    ##########################################################
+    # Go back through grid from square 0 to square 
+    # (rows x cols - 1) and set the clue number on each 
+    # sqaure that is found in the across_start_squares and
+    # down_start_square hashes from above.
+    #
+    # We create two versions....
+    # 1) Row/Col - $clue_numbers[$row][$col] = $clue_number
+    #    [0,0] to [14,14] for 15x15 ([0,0] to [rows-1,cols-1])
+    # 2) Square Num  - $clue_numbers{$square} = $clue_number
+    #    Square 0 to 224 for 15x15 (0 to row*cols-1)
+    ###########################################################
+    # Across
+    my $counter = 0;
+    my $clue_num = 1;
+    my @clue_numbers;
+    my %clue_numbers;
+    for(my $row = 0; $row < $self->{rows}; $row++) {
+        for(my $col = 0; $col < $self->{columns}; $col++) {
+            if( $across_start_squares{$counter} || $down_start_squares{$counter} ) {
+                # Hash - Square number
+                $clue_numbers{$counter} = $clue_num;
+                # Array - row/col
+                $clue_numbers[$row][$col] = $clue_num;
+                $clue_num++;
+            }
+            $counter++;
+        }
+    }
+
+    # Now get data and set hash of hashes
+    # Down
+    my $start_row = 0;        # Square number - row
+    my $start_col = 0;        # Square number - col
+    my $start_square = 0;
+    my $length = 0;           # Length of current solution word
+    my $count = 0;            # Clue number
+    my $square = 0;           # Grid square
+    my $sol_word = '';        # Solution word
+    my $last_square = '';     # Contents of last square visted
+    my $last_square_two = ''; # Contents of two squares back
+    my $last_row = 0;      # 0 (isn't) or 1 (is) last row ($self->{rows}-1)
+    for(my $col = 0; $col < $self->{columns}; $col++) {
+        for(my $row = 0; $row < $self->{rows}; $row++) {
+            if ( $sol_two[$row][$col] eq '.' || $row >= $self->{rows} - 1 ) {
+                # Save data
+
+                # Set vars if current square eq '.' and is in last row in col 
+                if( $sol_two[$row][$col] eq '.' && $last_row ) {
+                    $square++;
+                    $last_square_two = $last_square;
+                    $last_square = '.';
+                    $last_row = 0;
+                    next;
+                }
+
+                # Set vars if current square eq '.', last_square eq '.'
+                # and we're not in last row of col 
+                if( $sol_two[$row][$col] eq '.' && !$last_row && $last_square eq '.' ) { 
+                    if( $row == $self->{rows} - 1 ) {
+                        $start_col++;
+                        $start_row = 0;
+                        $last_row = 1;
+                    } else {
+                        $start_row++;
+                        $last_row = 0;
+                    } 
+                    $square++;
+                    $last_square_two = $last_square;
+                    $last_square = '.';
+                    next;
+                }
+
+                # Get last square of each column
+                if( $row == $self->{rows} - 1 ) {
+                    $sol_word .= $sol_two[$row][$col];
+                    $length++;
+                    $last_row = 1;
+                } else {
+                    $last_row = 0;
+                }
+
+                # Get key and clue nem
+                my $clue_num = $clue_numbers[$start_row][$start_col];
+                next unless defined $clue_num;
+                my $key = $clue_num;
+
+                # Store info into puzzle hash
+                $self->{down}{$key}{length} = $length;
+                $self->{down}{$key}{solution} = $sol_word;
+                $self->{down}{$key}{row} = $start_row+1;
+                $self->{down}{$key}{column} = $start_col+1;
+                $self->{down}{$key}{clue_number} = $clue_num;
+
+                # Reset variables
+                $length = 0;
+                $sol_word = '';
+                if($row >= $self->{rows} - 1 ) {
+                    $start_col++;
+                    $start_row = 0;
+                } else {
+                    $start_row = $row + 1;
+                }
+            } else {
+                if( $last_square eq '.' && $last_square_two eq '.' && $row != 0 ) {
+                    $start_row++;
+                }
+                $sol_word .= $sol_two[$row][$col];
+                $length++;
+                $last_row = 0;
+            }
+            $square++;
+            $last_square_two = $last_square;
+            $last_square = $sol_two[$row][$col];
+        }
+    }
+
+    # Return down hash 
+    return ($self->{down});
+}
+
+
 sub parse_file {
     my($self) = shift;
     _parse_file($self);
@@ -117,10 +534,18 @@ sub _parse_file {
 
     # Solution
     my @solution;
+    my @solution_two; # two-dimensional array
     for(my $j=0; $j<$height; $j++) {
+        my $twodim_col = 0;
         read(FH, $solution[$j], $width);
+        my @letters = split(//,$solution[$j]);
+        foreach my $letter (@letters) {
+            $solution_two[$j][$twodim_col] = $letter;
+            $twodim_col++;
+        }
     }
     $self->{solution} = \@solution;
+    $self->{solution_two} = \@solution_two;
 
     # Diagram
     my @diagram;
@@ -226,6 +651,11 @@ sub _parse_file {
                 $parse_word =~ s/\s+$//;
                 $tmp = $parse_word;
                 $aclues .= "$anum - $tmp\n";
+
+                my $key = "$anum";
+                $self->{across}{$key}{direction} = 'across';
+                $self->{across}{$key}{clue_number} = $anum;
+                $self->{across}{$key}{clue} = $tmp;
             }
  
             # Down
@@ -243,6 +673,11 @@ sub _parse_file {
                 $parse_word =~ s/\s+$//;
                 $tmp = $parse_word;
                 $dclues .= "$dnum - $tmp\n";
+
+                my $key = "$dnum";
+                $self->{down}{$key}{direction} = 'down';
+                $self->{down}{$key}{clue_number} = $dnum;
+                $self->{down}{$key}{clue} = $tmp;
             }
         }
     }
@@ -254,33 +689,41 @@ sub _parse_file {
 
 }
 
-sub is_parsed{ 
-    my($self) = @_;
+sub is_parsed { 
+    my($self) = shift;
     return $self->{is_parsed};
 }
 
 sub get_rows {
-    my($self) = @_;
+    my($self) = shift;
     _parse_file($self) unless $self->{is_parsed}; 
     return $self->{rows};
 }
 
 sub get_columns {
-    my($self) = @_;
+    my($self) = shift;
     _parse_file($self) unless $self->{is_parsed}; 
     return $self->{columns};
 }
 
 sub get_solution {
-    my($self) = @_;
+    my($self) = shift;
     _parse_file($self) unless $self->{is_parsed}; 
     my $solref = $self->{solution};
     my @sol = @$solref;
     return @sol;
 }
 
+sub get_solution_two {
+    my($self) = shift;
+    _parse_file($self) unless $self->{is_parsed}; 
+    my $soltworef = $self->{solution_two};
+    my @soltwo = @$soltworef;
+    return @soltwo;
+}
+
 sub get_diagram {
-    my($self) = @_;
+    my($self) = shift;
     _parse_file($self) unless $self->{is_parsed}; 
     my $diagref = $self->{diagram};
     my @diag = @$diagref;
@@ -288,31 +731,31 @@ sub get_diagram {
 }
 
 sub get_title {
-    my($self) = @_;
+    my($self) = shift;
     _parse_file($self) unless $self->{is_parsed}; 
     return $self->{title};
 }
 
 sub get_author {
-    my($self) = @_;
+    my($self) = shift;
     _parse_file($self) unless $self->{is_parsed}; 
     return $self->{author};
 }
 
 sub get_copyright {
-    my($self) = @_;
+    my($self) = shift;
     _parse_file($self) unless $self->{is_parsed}; 
     return $self->{copyright};
 }
 
 sub get_across_clues {
-    my($self) = @_;
+    my($self) = shift;
     _parse_file($self) unless $self->{is_parsed}; 
     return $self->{aclues};
 }
 
 sub get_down_clues {
-    my($self) = @_;
+    my($self) = shift;
     _parse_file($self) unless $self->{is_parsed}; 
     return $self->{dclues};
 }
@@ -357,6 +800,38 @@ Convert::AcrossLite - Convert binary AcrossLite puzzle files to text.
   my @diagram = $ac->get_diagram;
   my $across_clues = $ac->get_across_clues;
   my $down_clues = $ac->get_down_clues;
+
+  or
+
+  use Convert::AcrossLite;
+
+  my $ac = Convert::AcrossLite->new();
+  $ac->in_file('/home/doug/puzzles/Easy.puz');
+
+  my($across_hashref, $down_hashref) = get_across_down;
+
+  my %across= %$across_hashref;
+  foreach my $key (sort { $a <=> $b } keys %across) {
+      print "Direction: $across{$key}{direction}\n";
+      print "Clue Number: $across{$key}{clue_number}\n";
+      print "Row: $across{$key}{row}\n";
+      print "Col: $across{$key}{column}\n";
+      print "Clue: $across{$key}{clue}\n";
+      print "Solution: $across{$key}{solution}\n";
+      print "Length: $across{$key}{length}\n\n";
+  }
+
+  my %down= %$down_hashref;
+  foreach my $key (sort { $a <=> $b } keys %down) {
+      print "Direction: $down{$key}{direction}\n";
+      print "Clue Number: $down{$key}{clue_number}\n";
+      print "Row: $down{$key}{row}\n";
+      print "Col: $down{$key}{column}\n";
+      print "Clue: $down{$key}{clue}\n";
+      print "Solution: $down{$key}{solution}\n";
+      print "Length: $down{$key}{length}\n\n";
+  }
+
 
 =head1 DESCRIPTION
 
@@ -411,13 +886,79 @@ If out_file is not set, then the text is returned.
 
   my $text = $ac->puz2text;
 
+=head2 get_across_down
+
+This method will get all the information needed to build any type of output 
+you may need(some info is set by parse_file): direction (across/down), 
+clue_number, clue, solution, solution length, grid row and column. This method 
+will return two hash references (across and down).
+
+  my($across_hashref, $down_hashref) = get_across_down;
+
+  my %across= %$across_hashref;
+  foreach my $key (sort { $a <=> $b } keys %across) {
+      print "Direction: $across{$key}{direction}\n";
+      print "Clue Number: $across{$key}{clue_number}\n";
+      print "Row: $across{$key}{row}\n";
+      print "Col: $across{$key}{column}\n";
+      print "Clue: $across{$key}{clue}\n";
+      print "Solution: $across{$key}{solution}\n";
+      print "Length: $across{$key}{length}\n\n";
+  }
+
+  my %down= %$down_hashref;
+  foreach my $key (sort { $a <=> $b } keys %down) {
+      print "Direction: $down{$key}{direction}\n";
+      print "Clue Number: $down{$key}{clue_number}\n";
+      print "Row: $down{$key}{row}\n";
+      print "Col: $down{$key}{column}\n";
+      print "Clue: $down{$key}{clue}\n";
+      print "Solution: $down{$key}{solution}\n";
+      print "Length: $down{$key}{length}\n\n";
+  }
+
+=head2 get_across
+
+This method will return all the across information (some info is set by
+parse_file): direction, clue_number, clue, solution, solution length, 
+grid row and column. This method will return a hash reference.
+
+  my $across_hashref = get_across;
+ 
+  my %across= %$across_hashref;
+  foreach my $key (sort { $a <=> $b } keys %across) {
+      print "Direction: $across{$key}{direction}\n";
+      print "Clue Number: $across{$key}{clue_number}\n";
+      print "Row: $across{$key}{row}\n";
+      print "Col: $across{$key}{column}\n";
+      print "Clue: $across{$key}{clue}\n";
+      print "Solution: $across{$key}{solution}\n";
+      print "Length: $across{$key}{length}\n\n";
+  }
+
+
+=head2 get_down
+
+This method will return all the down information (some info is set by
+parse_file): direction, clue_number, clue, solution, solution length, 
+grid row and column. This method will return a hash reference.
+
+  my $down_hashref = get_down;
+
+  my %down= %$down_hashref;
+  foreach my $key (sort { $a <=> $b } keys %down) {
+      print "Direction: $down{$key}{direction}\n";
+      print "Clue Number: $down{$key}{clue_number}\n";
+      print "Row: $down{$key}{row}\n";
+      print "Col: $down{$key}{column}\n";
+      print "Clue: $down{$key}{clue}\n";
+      print "Solution: $down{$key}{solution}\n";
+      print "Length: $down{$key}{length}\n\n";
+  }
+
 =head2 parse_file
 
 This method will parse the puzzle file by calling _parse_file. 
-
-=head2 _parse_file
-
-This helper method does the actual parsing of the puz file.
 
 =head2 is_parsed
 

@@ -21,3 +21,9 @@ Revision history for Perl extension Convert::AcrossLite.
 	- Added get_down_clues method
 	- Fixed examples/acrosslite-convert1.pl
         - Added examples/acrosslite-convert3.pl
+
+0.04  Thu Oct  17 14:32:58 2002
+	- Added get_across_down method
+	- Added get_across method
+	- Added get_down method
+	- Renamed 'examples' directory to 'eg'

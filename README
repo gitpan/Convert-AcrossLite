@@ -1,4 +1,4 @@
-Convert/AcrossLite version 0.03
+Convert/AcrossLite version 0.04
 ===============================
 NAME
     Convert::AcrossLite - Convert binary AcrossLite puzzle files to text.
@@ -34,6 +34,37 @@ SYNOPSIS
     my $across_clues = $ac->get_across_clues;
     my $down_clues = $ac->get_down_clues;
 
+    or
+
+    use Convert::AcrossLite;
+
+    my $ac = Convert::AcrossLite->new();
+    $ac->in_file('/home/doug/puzzles/Easy.puz');
+
+    my($across_hashref, $down_hashref) = get_across_down;
+
+    my %across= %$across_hashref;
+    foreach my $key (sort { $a <=> $b } keys %across) {
+        print "Direction: $across{$key}{direction}\n";
+        print "Clue Number: $across{$key}{clue_number}\n";
+        print "Row: $across{$key}{row}\n";
+        print "Col: $across{$key}{column}\n";
+        print "Clue: $across{$key}{clue}\n";
+        print "Solution: $across{$key}{solution}\n";
+        print "Length: $across{$key}{length}\n\n";
+    }
+
+    my %down= %$down_hashref;
+    foreach my $key (sort { $a <=> $b } keys %down) {
+        print "Direction: $down{$key}{direction}\n";
+        print "Clue Number: $down{$key}{clue_number}\n";
+        print "Row: $down{$key}{row}\n";
+        print "Col: $down{$key}{column}\n";
+        print "Clue: $down{$key}{clue}\n";
+        print "Solution: $down{$key}{solution}\n";
+        print "Length: $down{$key}{length}\n\n";
+    }
+
 
 DESCRIPTION
     Convert::AcrossLite is used to convert binary AcrossLite puzzle files 
@@ -62,7 +93,7 @@ METHODS
 
       $ac->in_file('/home/doug/puzzles/Easy.puz');
 
-  out _file
+  out_file
 
     This method returns the current puzzle output path/filename. 
 
@@ -87,6 +118,75 @@ METHODS
       or
  
       print $ac->puz2text;
+
+  get_across_down
+
+    This method will get all the information needed to build any type of output 
+    you may need(some info is set by parse_file): direction (across/down), 
+    clue_number, clue, solution, solution length, grid row and column. This
+    method will return two hash references (across and down).
+
+      my($across_hashref, $down_hashref) = get_across_down;
+
+      my %across= %$across_hashref;
+      foreach my $key (sort { $a <=> $b } keys %across) {
+          print "Direction: $across{$key}{direction}\n";
+          print "Clue Number: $across{$key}{clue_number}\n";
+          print "Row: $across{$key}{row}\n";
+          print "Col: $across{$key}{column}\n";
+          print "Clue: $across{$key}{clue}\n";
+          print "Solution: $across{$key}{solution}\n";
+          print "Length: $across{$key}{length}\n\n";
+      }
+
+      my %down= %$down_hashref;
+      foreach my $key (sort { $a <=> $b } keys %down) {
+          print "Direction: $down{$key}{direction}\n";
+          print "Clue Number: $down{$key}{clue_number}\n";
+          print "Row: $down{$key}{row}\n";
+          print "Col: $down{$key}{column}\n";
+          print "Clue: $down{$key}{clue}\n";
+          print "Solution: $down{$key}{solution}\n";
+          print "Length: $down{$key}{length}\n\n";
+      }
+
+  get_across
+
+    This method will return all the across information (some info is set by
+    parse_file): direction, clue_number, clue, solution, solution length, 
+    grid row and column. This method will return a hash reference.
+
+      my $across_hashref = get_across;
+ 
+      my %across= %$across_hashref;
+      foreach my $key (sort { $a <=> $b } keys %across) {
+          print "Direction: $across{$key}{direction}\n";
+          print "Clue Number: $across{$key}{clue_number}\n";
+          print "Row: $across{$key}{row}\n";
+          print "Col: $across{$key}{column}\n";
+          print "Clue: $across{$key}{clue}\n";
+          print "Solution: $across{$key}{solution}\n";
+          print "Length: $across{$key}{length}\n\n";
+      }
+
+  get_down
+
+    This method will return all the down information (some info is set by
+    parse_file): direction, clue_number, clue, solution, solution length, 
+    grid row and column. This method will return a hash reference.
+
+      my $down_hashref = get_down;
+
+      my %down= %$down_hashref;
+      foreach my $key (sort { $a <=> $b } keys %down) {
+          print "Direction: $down{$key}{direction}\n";
+          print "Clue Number: $down{$key}{clue_number}\n";
+          print "Row: $down{$key}{row}\n";
+          print "Col: $down{$key}{column}\n";
+          print "Clue: $down{$key}{clue}\n";
+          print "Solution: $down{$key}{solution}\n";
+          print "Length: $down{$key}{length}\n\n";
+      }
 
   parse_file
 

@@ -5,6 +5,7 @@ MANIFEST
 README
 test.pl
 TODO
-examples/acrosslite-convert1.pl
-examples/acrosslite-convert2.pl
-examples/acrosslite-convert3.pl
+eg/acrosslite-convert1.pl
+eg/acrosslite-convert2.pl
+eg/acrosslite-convert3.pl
+eg/acrosslite-convert4.pl
