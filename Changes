@@ -31,3 +31,9 @@ Revision history for Perl extension Convert::AcrossLite.
 
 0.05  Thu Oct  17 17:12:59 2002
 	- Added eg/puz2xml.pl
+
+0.06  Fri Oct  18 15:09:34 2002
+	- Fixed logic problem in get_across()
+	- Fixed logic problem in get_down()
+        - Now return empty string instead of null
+          if no title, author or copyright found

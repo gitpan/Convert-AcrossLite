@@ -8,7 +8,7 @@ use strict;
 use Carp;
 use vars qw($VERSION);
 
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 sub new {
     my $class = shift;
@@ -214,36 +214,38 @@ sub get_across {
     my $start_col = 0;         # Square number - col
     my $start_square = 0; 
     my $length = 0;            # Length of current solution word
-    my $count = 0;             # Clue number
     my $square = 0;            # Grid square
     my $sol_word = '';         # Solution word
     my $last_square = '';      # Contents of last square visited
     my $last_square_two = '';  # Contents of two squares ago
-    my $last_col = 0;          # 0 (isn't) or 1 (is) last col ($self->{columns}-1)
+
     for(my $row = 0; $row < $self->{rows}; $row++) {
         for(my $col = 0; $col < $self->{columns}; $col++) {
-            if ( $sol_two[$row][$col] eq '.' || $col >= $self->{columns} - 1 ) {
-                # Save data
 
-                # Set vars if current square eq '.' and is in last col in row
-                if( $sol_two[$row][$col] eq '.' && $last_col ) {
+            # If $sol_two[$row][$col] eq '.', then we *probably* want to
+            # save our data...if $col == $self->{columns} - 1, then we
+            # definitely want to.
+            if ( $sol_two[$row][$col] eq '.' || $col >= $self->{columns} - 1 ) {
+
+                # If this is first square and it contains '.',
+                # don't save data. Just set a few vars and move on.
+                if( $sol_two[$row][$col] eq '.' && $col == 0 ) {
                     $square++;
                     $last_square_two = $last_square;
                     $last_square = '.';
-                    $last_col = 0;
+                    $start_col++;
                     next;
                 }
 
-                # Set vars if current square eq '.', last_square eq '.'
-                # and we're not in last col of row
-                if( $sol_two[$row][$col] eq '.' && !$last_col && $last_square eq '.' ) { 
+                # If this isn't first square in col, this square contains '.'  
+                # and the previous square contains '.', don't save data.
+                # Just set a few vars and move on.
+                if( $sol_two[$row][$col] eq '.' && $col != 0 && $last_square eq '.' ) { 
                     if( $col == $self->{columns} - 1 ) {
                         $start_row++;
                         $start_col = 0;
-                        $last_col = 1;
                     } else {
                         $start_col++;
-                        $last_col = 0;
                     } 
                     $square++;
                     $last_square_two = $last_square;
@@ -251,13 +253,11 @@ sub get_across {
                     next;
                 }
 
+
                 # Get last square of row
                 if( $col == $self->{columns} - 1 ) {
                     $sol_word .= $sol_two[$row][$col];
                     $length++;
-                    $last_col = 1;
-                } else { 
-                    $last_col = 0;
                 }
 
                 # Get key and clue num
@@ -282,12 +282,8 @@ sub get_across {
                     $start_col = $col + 1;
                 }
             } else {
-                if( $last_square eq '.' && $last_square_two eq '.' && $col != 0 ) {
-                    $start_col++;
-                }
                 $sol_word .= $sol_two[$row][$col];
                 $length++;
-                $last_col = 0;
             }
             $square++;
             $last_square_two = $last_square;
@@ -419,36 +415,37 @@ sub get_down {
     my $start_col = 0;        # Square number - col
     my $start_square = 0;
     my $length = 0;           # Length of current solution word
-    my $count = 0;            # Clue number
     my $square = 0;           # Grid square
     my $sol_word = '';        # Solution word
     my $last_square = '';     # Contents of last square visted
     my $last_square_two = ''; # Contents of two squares back
-    my $last_row = 0;      # 0 (isn't) or 1 (is) last row ($self->{rows}-1)
     for(my $col = 0; $col < $self->{columns}; $col++) {
         for(my $row = 0; $row < $self->{rows}; $row++) {
-            if ( $sol_two[$row][$col] eq '.' || $row >= $self->{rows} - 1 ) {
-                # Save data
 
-                # Set vars if current square eq '.' and is in last row in col 
-                if( $sol_two[$row][$col] eq '.' && $last_row ) {
+            # If $sol_two[$row][$col] eq '.', then we *probably* want to
+            # save our data...if $row == $self->{rows} - 1, then we
+            # definitely want to.
+            if ( $sol_two[$row][$col] eq '.' || $row >= $self->{rows} - 1 ) {
+
+                # If this is the first square and it contains '.',
+                # don't save our data. Just set a few vars and move on.
+                if( $sol_two[$row][$col] eq '.' && $row == 0 ) {
                     $square++;
                     $last_square_two = $last_square;
                     $last_square = '.';
-                    $last_row = 0;
+                    $start_row++;
                     next;
                 }
 
-                # Set vars if current square eq '.', last_square eq '.'
-                # and we're not in last row of col 
-                if( $sol_two[$row][$col] eq '.' && !$last_row && $last_square eq '.' ) { 
+                # If this isn't first square in row, this square contains '.'
+                # and the previous square contains '.', don't save data.
+                # Just set a few vars and move on.
+                if( $sol_two[$row][$col] eq '.' && $row != 0 && $last_square eq '.' ) { 
                     if( $row == $self->{rows} - 1 ) {
                         $start_col++;
                         $start_row = 0;
-                        $last_row = 1;
                     } else {
                         $start_row++;
-                        $last_row = 0;
                     } 
                     $square++;
                     $last_square_two = $last_square;
@@ -460,9 +457,6 @@ sub get_down {
                 if( $row == $self->{rows} - 1 ) {
                     $sol_word .= $sol_two[$row][$col];
                     $length++;
-                    $last_row = 1;
-                } else {
-                    $last_row = 0;
                 }
 
                 # Get key and clue nem
@@ -487,12 +481,8 @@ sub get_down {
                     $start_row = $row + 1;
                 }
             } else {
-                if( $last_square eq '.' && $last_square_two eq '.' && $row != 0 ) {
-                    $start_row++;
-                }
                 $sol_word .= $sol_two[$row][$col];
                 $length++;
-                $last_row = 0;
             }
             $square++;
             $last_square_two = $last_square;
@@ -562,9 +552,13 @@ sub _parse_file {
         last if $char == 0;
         $parse_word .= $buf;
     }
-    $parse_word =~ s/^\s+//;
-    $parse_word =~ s/\s+$//;
-    $self->{title} = $parse_word;
+    if( defined $parse_word ) {
+        $parse_word =~ s/^\s+//;
+        $parse_word =~ s/\s+$//;
+        $self->{title} = $parse_word;
+    } else {
+        $self->{title} = '';
+    }
 
     # Author
     $parse_word = '';
@@ -575,9 +569,13 @@ sub _parse_file {
         last if $char == 0;
         $parse_word .= $buf;
     }
-    $parse_word =~ s/^\s+//;
-    $parse_word =~ s/\s+$//;
-    $self->{author} = $parse_word;
+    if( defined $parse_word ) {
+        $parse_word =~ s/^\s+//;
+        $parse_word =~ s/\s+$//;
+        $self->{author} = $parse_word;
+    } else {
+        $self->{author} = '';
+    }
 
     # Copyright
     $parse_word = '';
@@ -588,9 +586,13 @@ sub _parse_file {
         last if $char == 0;
         $parse_word .= $buf;
     }
-    $parse_word =~ s/^\s+//;
-    $parse_word =~ s/\s+$//;
-    $self->{copyright} = $parse_word;
+    if( defined $parse_word ) {
+        $parse_word =~ s/^\s+//;
+        $parse_word =~ s/\s+$//;
+        $self->{copyright} = $parse_word;
+    } else {
+        $self->{copyright} = '';
+    }
 
     # Clues
     my ($apos,$dpos);
