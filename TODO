@@ -1,1 +1,2 @@
 This module was thrown together...sorry. Improve code and pod.
+Modify out_file() so it's not tied to puz2text().
