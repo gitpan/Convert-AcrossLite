@@ -1,4 +1,4 @@
-Convert/AcrossLite version 0.02
+Convert/AcrossLite version 0.03
 ===============================
 NAME
     Convert::AcrossLite - Convert binary AcrossLite puzzle files to text.
@@ -18,6 +18,22 @@ SYNOPSIS
     my $ac = Convert::AcrossLite->new();
     $ac->in_file('/home/doug/puzzles/Easy.puz');
     my $text = $ac->puz2text;
+
+    or
+
+    use Convert::AcrossLite;
+
+    my $ac = Convert::AcrossLite->new();
+    $ac->in_file('/home/doug/puzzles/Easy.puz');
+    my $ac->parse_file;
+    my $title = $ac->get_title;
+    my $author = $ac->get_author;
+    my $copyright = $ac->get_copyright;
+    my @solution = $ac->get_solution;
+    my @diagram = $ac->get_diagram;
+    my $across_clues = $ac->get_across_clues;
+    my $down_clues = $ac->get_down_clues;
+
 
 DESCRIPTION
     Convert::AcrossLite is used to convert binary AcrossLite puzzle files 
@@ -72,9 +88,73 @@ METHODS
  
       print $ac->puz2text;
 
+  parse_file
+
+    This method will parse the puzzle file by calling _parse_file.
+
   _parse_file
 
     This helper method does the actual parsing of the puz file.
+
+  is_parsed
+
+    This method returns file parse status: 
+      0 if input file has not been parsed
+      1 if input file has been parsed.
+
+  get_rows
+
+    This method returns the number of rows in puzzle.
+
+       my $rows = $ac->get_rows;
+
+  get_columns
+
+    This method returns the number of columns in puzzle.
+
+      my $columns = $ac->get_columns;
+
+  get_solution
+
+    This method returns the puzzle solution.
+
+      my @solution = $ac->get_solution;
+
+  get_diagram
+
+    This method returns the puzzle solution diagram.
+
+      my @solution = $ac->get_diagram;
+
+  get_title
+
+    This method returns the puzzle title.
+
+      my $title = $ac->get_title;
+
+  get_author
+
+    This method returns the puzzle author.
+
+      my $author = $ac->get_author;
+
+  get_copyright
+
+    This method returns the puzzle copyright.
+
+      my $copyright = $ac->get_copyright;
+
+  get_across_clues
+
+    This method returns the puzzle across clues.
+
+      my $across_clues = $ac->get_across_clues;
+
+  get_down_clues
+
+    This method returns the puzzle down clues.
+
+      my $down_clues = $ac->get_down_clues;
 
 INSTALLATION
 

@@ -8,7 +8,7 @@ use strict;
 use Carp;
 use vars qw($VERSION);
 
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 sub new {
     my $class = shift;
@@ -16,6 +16,7 @@ sub new {
 
     my $self = {};
     $self->{in_file} = $conf{in_file} || 'Default.puz';
+    $self->{is_parsed} = 0;
 
     bless($self, $class);
     return $self;
@@ -38,7 +39,7 @@ sub puz2text {
     my $text;
 
     # Parse puz file
-    _parse_file($self);
+    _parse_file($self) unless $self->{is_parsed};
 
     # Format across clues
     my @aclues = split("\n", $self->{aclues});
@@ -85,6 +86,11 @@ sub puz2text {
     } else {
         return $text;
     }
+}
+
+sub parse_file {
+    my($self) = shift;
+    _parse_file($self);
 }
 
 sub _parse_file {
@@ -244,7 +250,71 @@ sub _parse_file {
 
     $self->{aclues} = $aclues;
     $self->{dclues} = $dclues;
+    $self->{is_parsed} = 1;
 
+}
+
+sub is_parsed{ 
+    my($self) = @_;
+    return $self->{is_parsed};
+}
+
+sub get_rows {
+    my($self) = @_;
+    _parse_file($self) unless $self->{is_parsed}; 
+    return $self->{rows};
+}
+
+sub get_columns {
+    my($self) = @_;
+    _parse_file($self) unless $self->{is_parsed}; 
+    return $self->{columns};
+}
+
+sub get_solution {
+    my($self) = @_;
+    _parse_file($self) unless $self->{is_parsed}; 
+    my $solref = $self->{solution};
+    my @sol = @$solref;
+    return @sol;
+}
+
+sub get_diagram {
+    my($self) = @_;
+    _parse_file($self) unless $self->{is_parsed}; 
+    my $diagref = $self->{diagram};
+    my @diag = @$diagref;
+    return @diag;
+}
+
+sub get_title {
+    my($self) = @_;
+    _parse_file($self) unless $self->{is_parsed}; 
+    return $self->{title};
+}
+
+sub get_author {
+    my($self) = @_;
+    _parse_file($self) unless $self->{is_parsed}; 
+    return $self->{author};
+}
+
+sub get_copyright {
+    my($self) = @_;
+    _parse_file($self) unless $self->{is_parsed}; 
+    return $self->{copyright};
+}
+
+sub get_across_clues {
+    my($self) = @_;
+    _parse_file($self) unless $self->{is_parsed}; 
+    return $self->{aclues};
+}
+
+sub get_down_clues {
+    my($self) = @_;
+    _parse_file($self) unless $self->{is_parsed}; 
+    return $self->{dclues};
 }
 
 
@@ -272,6 +342,21 @@ Convert::AcrossLite - Convert binary AcrossLite puzzle files to text.
   my $ac = Convert::AcrossLite->new();
   $ac->in_file('/home/doug/puzzles/Easy.puz');
   my $text = $ac->puz2text;
+
+  or
+
+  use Convert::AcrossLite;
+
+  my $ac = Convert::AcrossLite->new();
+  $ac->in_file('/home/doug/puzzles/Easy.puz');
+  my $ac->parse_file;
+  my $title = $ac->get_title;
+  my $author = $ac->get_author;
+  my $copyright = $ac->get_copyright;
+  my @solution = $ac->get_solution;
+  my @diagram = $ac->get_diagram;
+  my $across_clues = $ac->get_across_clues;
+  my $down_clues = $ac->get_down_clues;
 
 =head1 DESCRIPTION
 
@@ -326,9 +411,71 @@ If out_file is not set, then the text is returned.
 
   my $text = $ac->puz2text;
 
+=head2 parse_file
+
+This method will parse the puzzle file by calling _parse_file. 
+
 =head2 _parse_file
 
 This helper method does the actual parsing of the puz file.
+
+=head2 is_parsed
+
+This method returns file parse status: 0 if input file has not been parsed, 1 if input file has been parsed.
+
+=head2 get_rows
+
+This method returns the number of rows in puzzle.
+
+  my $rows = $ac->get_rows;
+
+=head2 get_columns
+
+This method returns the number of columns in puzzle.
+
+  my $columns = $ac->get_columns;
+
+=head2 get_solution
+
+This method returns the puzzle solution.
+
+  my @solution = $ac->get_solution;
+
+=head2 get_diagram
+
+This method returns the puzzle solution diagram.
+
+  my @solution = $ac->get_diagram;
+
+=head2 get_title
+
+This method returns the puzzle title.
+
+  my $title = $ac->get_title;
+
+=head2 get_author
+
+This method returns the puzzle author.
+
+  my $author = $ac->get_author;
+
+=head2 get_copyright
+
+This method returns the puzzle copyright.
+
+  my $copyright = $ac->get_copyright;
+
+=head2 get_across_clues
+
+This method returns the puzzle across clues.
+
+  my $across_clues = $ac->get_across_clues;
+
+=head2 get_down_clues
+
+This method returns the puzzle down clues.
+
+  my $down_clues = $ac->get_down_clues;
 
 =head1 AUTHOR
 
