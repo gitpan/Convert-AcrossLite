@@ -1,0 +1,101 @@
+Convert/AcrossLite version 0.02
+===============================
+NAME
+    Convert::AcrossLite - Convert binary AcrossLite puzzle files to text.
+
+SYNOPSIS
+    use Convert::AcrossLite;
+
+    my $ac = Convert::AcrossLite->new();
+    $ac->in_file('/home/doug/puzzles/Easy.puz');
+    $ac->out_file('/home/doug/puzzles/Easy.txt');
+    $ac->puz2text;
+
+    or
+
+    use Convert::AcrossLite;
+
+    my $ac = Convert::AcrossLite->new();
+    $ac->in_file('/home/doug/puzzles/Easy.puz');
+    my $text = $ac->puz2text;
+
+DESCRIPTION
+    Convert::AcrossLite is used to convert binary AcrossLite puzzle files 
+    to text.
+
+    Convert::AcrossLite is loosely based on the C program written by Bob 
+    Newell (http://www.gtoal.com/wordgames/gene/AcrossLite).
+
+CONSTRUCTOR
+  new
+
+    This is the contructor. You can pass the full path to the puzzle file.
+
+      my $ac = Convert::AcrossLite->new(file => '/home/doug/puzzles/Easy.puz');
+
+    The default value is 'Default.puz'.
+
+METHODS
+  in_file
+
+    This method returns the current puzzle input path/filename. 
+
+      my $in_filename = $ac->in_file;
+
+    You may also set the puzzle input file by passing the path/filename.
+
+      $ac->in_file('/home/doug/puzzles/Easy.puz');
+
+  out _file
+
+    This method returns the current puzzle output path/filename. 
+
+      my $out_filename = $ac->out_file;
+
+    You may also set the puzzle output file by passing the path/filename.
+
+      $ac->out_file('/home/doug/puzzles/Easy.txt');
+
+  puz2text
+
+    This method will produce a basic text file in the same format as the 
+    easy.txt file provided with AcrossLite. This method will read the
+    input file set by in_file and write to the file set by out_file.
+
+      $ac->puz2text;
+
+    If out_file is not set, then the text is returned.
+
+      my $text = $ac->puz2text;
+
+      or
+ 
+      print $ac->puz2text;
+
+  _parse_file
+
+    This helper method does the actual parsing of the puz file.
+
+INSTALLATION
+
+  To install this module type the following:
+
+    perl Makefile.PL
+    make
+    make test
+    make install
+
+DEPENDENCIES
+
+    Carp
+
+AUTHOR
+
+    Doug Sparling <doug@dougsparling.com>
+
+COPYRIGHT AND LICENSE
+
+    Copyright (c) 2002 Douglas Sparling. All rights reserved. 
+
+    This program is free software; you can redistribute it and/or 
+    modify it under the same terms as Perl itself.
