@@ -37,3 +37,7 @@ Revision history for Perl extension Convert::AcrossLite.
 	- Fixed logic problem in get_down()
         - Now return empty string instead of null
           if no title, author or copyright found
+
+0.07  Fri Feb  06 15:22:26 2004
+	- Fixed bug in get_across() and get_down() that would
+          include '.' in final row or column as part of solution.

@@ -8,7 +8,7 @@ use strict;
 use Carp;
 use vars qw($VERSION);
 
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 sub new {
     my $class = shift;
@@ -256,8 +256,10 @@ sub get_across {
 
                 # Get last square of row
                 if( $col == $self->{columns} - 1 ) {
-                    $sol_word .= $sol_two[$row][$col];
-                    $length++;
+                    unless( $sol_two[$row][$col] eq '.' ) {
+                        $sol_word .= $sol_two[$row][$col];
+                        $length++;
+                    }
                 }
 
                 # Get key and clue num
@@ -455,8 +457,11 @@ sub get_down {
 
                 # Get last square of each column
                 if( $row == $self->{rows} - 1 ) {
-                    $sol_word .= $sol_two[$row][$col];
-                    $length++;
+                    # If last square is '.', don't add to solution
+                    unless( $sol_two[$row][$col] eq '.' ) {
+                        $sol_word .= $sol_two[$row][$col];
+                        $length++;
+                    }
                 }
 
                 # Get key and clue nem
