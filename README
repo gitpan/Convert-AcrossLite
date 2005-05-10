@@ -1,4 +1,4 @@
-Convert/AcrossLite version 0.06
+Convert/AcrossLite version 0.08
 ===============================
 NAME
     Convert::AcrossLite - Convert binary AcrossLite puzzle files to text.
@@ -269,13 +269,31 @@ DEPENDENCIES
 
     Carp
 
+OTHER
+
+    US Crossword Rules: 
+    http://www.maa.org/editorial/mathgames/mathgames_05_10_04.html
+
+    The rules for American crosswords are as follows:
+
+    1. The pattern of black-and-white squares must be symmetrical.  Generally this rule means that if you turn the grid upside-down, the pattern will look the same as it does right-side-up.
+    2. Do not use too many black squares.  In the old days of puzzles, black squares were not allowed to occupy more than 16% of a grid.  Nowadays there is no strict limit, in order to allow maximum flexibility for the placement of theme entries.  Still, "cheater" black squares (ones that do not affect the number of words in the puzzle, but are added to make constructing easier) should be kept to a minimum, and large clumps of black squares anywhere in a grid are strongly discouraged.
+    3. Do not use unkeyed letters (letters that appear in only one word across or down).  In fairness to solvers, every letter has to be appear in both an Across and a Down word.
+    4. Do not use two-letter words.  The minimum word length is three letters.
+    5. The grid must have all-over interlock.  In other words, the black squares may not cut the grid up into separate pieces.  A solver, theoretically, should be able to able to proceed from any section of the grid to any other without having to stop and start over.
+    6. Long theme entries must be symmetrically placed.  If there is a major theme entry three rows down from the top of the grid, for instance, then there must be another theme entry in the same position three rows up from the bottom.  Also, as a general rule, no nontheme entry should be longer than any theme entry.
+    7. Do not repeat words in the grid.
+    8. Do not make up words and phrases.  Every answer must have a reference or else be in common use in everyday speech or writing.
+    9. (Modern rule) The vocabulary in a crossword must be lively and have very little obscurity.
+
+
 AUTHOR
 
     Doug Sparling <doug@dougsparling.com>
 
 COPYRIGHT AND LICENSE
 
-    Copyright (c) 2002 Douglas Sparling. All rights reserved. 
+    Copyright (c) 2005 Douglas Sparling. All rights reserved. 
 
     This program is free software; you can redistribute it and/or 
     modify it under the same terms as Perl itself.

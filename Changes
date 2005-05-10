@@ -41,3 +41,11 @@ Revision history for Perl extension Convert::AcrossLite.
 0.07  Fri Feb  06 15:22:26 2004
 	- Fixed bug in get_across() and get_down() that would
           include '.' in final row or column as part of solution.
+
+0.08 - Tue May 10 14:33:12 CDT 2005
+         - Removed $apos, $dpos, $mcount declarations from _parse_file
+           Not used
+         - Fixed typo in get_down() and get_across()
+           Changed is_parse to is_parsed
+         - Modified logic to fix bugs in get_across() and get_down()
+           Some puzzles weren't coverting correctly 
