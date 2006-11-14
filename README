@@ -1,4 +1,4 @@
-Convert/AcrossLite version 0.08
+Convert/AcrossLite version 0.09
 ===============================
 NAME
     Convert::AcrossLite - Convert binary AcrossLite puzzle files to text.
@@ -265,6 +265,26 @@ INSTALLATION
     make test
     make install
 
+SUPPORT AND DOCUMENTATION
+
+  After installing, you can find documentation for this module with the perldoc command.
+
+    perldoc Convert::AcrossLite
+
+    You can also look for information at:
+
+    Search CPAN
+        http://search.cpan.org/dist/Convert-AcrossLite
+
+    CPAN Request Tracker:
+        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Convert-AcrossLite
+
+    AnnoCPAN, annotated CPAN documentation:
+        http://annocpan.org/dist/Convert-AcrossLite
+
+    CPAN Ratings:
+        http://cpanratings.perl.org/d/Convert-AcrossLite
+
 DEPENDENCIES
 
     Carp
@@ -286,14 +306,18 @@ OTHER
     8. Do not make up words and phrases.  Every answer must have a reference or else be in common use in everyday speech or writing.
     9. (Modern rule) The vocabulary in a crossword must be lively and have very little obscurity.
 
+=head1 ACKNOWLEDGEMENTS
+
+Changed C<eq '-'> to C<ne '.'> so filled-in puzzles will parse
+Patch from Ed Santiago
 
 AUTHOR
 
-    Doug Sparling <doug@dougsparling.com>
+    Doug Sparling <dougsparling@yahoo.com>
 
 COPYRIGHT AND LICENSE
 
-    Copyright (c) 2005 Douglas Sparling. All rights reserved. 
+    Copyright (c) 2006 Douglas Sparling. All rights reserved. 
 
     This program is free software; you can redistribute it and/or 
     modify it under the same terms as Perl itself.

@@ -1,13 +1,11 @@
-# Copyright (c) 2005 Douglas Sparling. All rights reserved. This program is free
-# software; you can redistribute it and/or modify it under the same terms
-# as Perl itself.
 package Convert::AcrossLite;
 
+use warnings;
 use strict;
 use Carp;
 use vars qw($VERSION);
 
-$VERSION = '0.08';
+$VERSION = '0.09';
 
 sub new {
   my $class = shift;
@@ -133,14 +131,14 @@ sub get_across {
       # Check position for across number
       # Left edge non-black followed by non-black
       if( ($k == 0 &&
-           substr($diagram[$j],$k,1) eq '-' &&    # Row $j, Col 0 (k)
-           substr($diagram[$j],$k+1,1) eq '-') || # Row $j, Col 1 (k+1)
+           substr($diagram[$j],$k,1) ne '.' &&    # Row $j, Col 0 (k)
+           substr($diagram[$j],$k+1,1) ne '.') || # Row $j, Col 1 (k+1)
         # Previous black - nonblack - nonblack
           ( ($k+1)<$self->{columns} &&  # Not last col
             ($k-1)>=0 &&                # Not first col
-            substr($diagram[$j],$k,1) eq '-' &&
+            substr($diagram[$j],$k,1) ne '.' &&
             substr($diagram[$j],$k-1,1) eq '.' &&
-            substr($diagram[$j],$k+1,1) eq '-' ) ) {
+            substr($diagram[$j],$k+1,1) ne '.' ) ) {
 
         $across_start_squares{$square_num}++;
         $square_num++
@@ -157,14 +155,14 @@ sub get_across {
     for (my $j=0;$j<$self->{rows};$j++) { # height
     # Check position for down number
       if( ($j == 0 &&                              # Row 0
-           substr($diagram[$j],$k,1) eq '-' &&
-           substr($diagram[$j+1],$k,1) eq '-') ||
+           substr($diagram[$j],$k,1) ne '.' &&
+           substr($diagram[$j+1],$k,1) ne '.') ||
           # Black above - nonblack - nonblack below
           ( ($j-1)>=0 &&                           # Not first row
             ($j+1)<$self->{rows} &&                # Not last row
-            substr($diagram[$j],$k,1) eq '-' &&
+            substr($diagram[$j],$k,1) ne '.' &&
             substr($diagram[$j-1],$k,1) eq '.' &&
-            substr($diagram[$j+1],$k,1) eq '-' ) ) {
+            substr($diagram[$j+1],$k,1) ne '.' ) ) {
 
         $down_start_squares{$square_num}++;
         if( $j >= $self->{rows}-1 ) {
@@ -363,14 +361,14 @@ sub get_down {
       # Check position for across number
       # Left edge non-black followed by non-black
       if( ($k == 0 &&
-           substr($diagram[$j],$k,1) eq '-' &&    # Row $j, Col 0 (k)
-           substr($diagram[$j],$k+1,1) eq '-') || # Row $j, Col 1 (k+1)
+           substr($diagram[$j],$k,1) ne '.' &&    # Row $j, Col 0 (k)
+           substr($diagram[$j],$k+1,1) ne '.') || # Row $j, Col 1 (k+1)
         # Previous black - nonblack - nonblack
           ( ($k+1)<$self->{columns} &&  # Not last col
             ($k-1)>=0 &&                # Not first col
-            substr($diagram[$j],$k,1) eq '-' &&
+            substr($diagram[$j],$k,1) ne '.' &&
             substr($diagram[$j],$k-1,1) eq '.' &&
-            substr($diagram[$j],$k+1,1) eq '-' ) ) {
+            substr($diagram[$j],$k+1,1) ne '.' ) ) {
 
         $across_start_squares{$square_num}++;
         $square_num++
@@ -387,14 +385,14 @@ sub get_down {
     for (my $j=0;$j<$self->{rows};$j++) { # height
     # Check position for down number
       if( ($j == 0 &&                              # Row 0
-           substr($diagram[$j],$k,1) eq '-' &&
-           substr($diagram[$j+1],$k,1) eq '-') ||
+           substr($diagram[$j],$k,1) ne '.' &&
+           substr($diagram[$j+1],$k,1) ne '.') ||
           # Black above - nonblack - nonblack below
           ( ($j-1)>=0 &&                           # Not first row
             ($j+1)<$self->{rows} &&                # Not last row
-            substr($diagram[$j],$k,1) eq '-' &&
+            substr($diagram[$j],$k,1) ne '.' &&
             substr($diagram[$j-1],$k,1) eq '.' &&
-            substr($diagram[$j+1],$k,1) eq '-' ) ) {
+            substr($diagram[$j+1],$k,1) ne '.' ) ) {
 
         $down_start_squares{$square_num}++;
         if( $j >= $self->{rows}-1 ) {
@@ -660,14 +658,14 @@ sub _parse_file {
       # Left edge non-black followed by non-black
       my $anum = 0; # across number
       if( ($k == 0 &&
-           substr($diagram[$j],$k,1) eq '-' &&    # Row $j, Col 0 (k)
-           substr($diagram[$j],$k+1,1) eq '-') || # Row $j, Col 1 (k+1)
+           substr($diagram[$j],$k,1) ne '.' &&    # Row $j, Col 0 (k)
+           substr($diagram[$j],$k+1,1) ne '.') || # Row $j, Col 1 (k+1)
         # Previous black - nonblack - nonblack
           ( ($k+1)<$width &&  # Not last col
             ($k-1)>=0 &&      # Not first col
-            substr($diagram[$j],$k,1) eq '-' &&
+            substr($diagram[$j],$k,1) ne '.' &&
             substr($diagram[$j],$k-1,1) eq '.' &&
-            substr($diagram[$j],$k+1,1) eq '-' ) ) {
+            substr($diagram[$j],$k+1,1) ne '.' ) ) {
 
         $ccount++;
         $anum = $ccount;
@@ -771,14 +769,6 @@ sub get_solution {
   return @sol;
 }
 
-sub get_solution_two {
-  my($self) = shift;
-  _parse_file($self) unless $self->{is_parsed}; 
-  my $soltworef = $self->{solution_two};
-  my @soltwo = @$soltworef;
-  return @soltwo;
-}
-
 sub get_diagram {
   my($self) = shift;
   _parse_file($self) unless $self->{is_parsed}; 
@@ -816,17 +806,6 @@ sub get_down_clues {
   _parse_file($self) unless $self->{is_parsed}; 
   return $self->{dclues};
 }
-
-sub get_nonstandard {
-  my($self) = shift;
-  return $self->{nonstandard};
-}
-
-sub set_nonstandard {
-  my($self) = shift;
-  if(@_) { $self->{nonstandard} = shift }
-}
-
 
 1;
 
@@ -1085,13 +1064,46 @@ This method returns the puzzle down clues.
 
   my $down_clues = $ac->get_down_clues;
 
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc Convert::AcrossLite
+
+You can also look for information at:
+
+=over 4
+
+=item * AnnoCPAN: Annotated CPAN documentation
+
+L<http://annocpan.org/dist/Convert-AcrossLite>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/d/Convert-AcrossLite>
+
+=item * RT: CPAN's request tracker
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Convert-AcrossLite>
+
+=item * Search CPAN
+
+L<http://search.cpan.org/dist/Convert-AcrossLite>
+
+=back
+
+=head1 ACKNOWLEDGEMENTS
+
+Changed C<eq '-'> to C<ne '.'> so filled-in puzzles will parse
+Patch from Ed Santiago
+
 =head1 AUTHOR
 
 Doug Sparling E<lt>F<doug@dougsparling.com>E<gt>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2005 Douglas Sparling. All rights reserved. This program is free
+Copyright (c) 2006 Douglas Sparling. All rights reserved. This program is free
 software; you can redistribute it and/or modify it under the same terms
 as Perl itself.
 

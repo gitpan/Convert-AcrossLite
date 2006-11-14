@@ -49,3 +49,11 @@ Revision history for Perl extension Convert::AcrossLite.
            Changed is_parse to is_parsed
          - Modified logic to fix bugs in get_across() and get_down()
            Some puzzles weren't coverting correctly 
+
+0.09 - Mon Nov 13 21:36:34 2006
+         - Used module-starter
+         - Changed C<eq '-'> to C<ne '.'> so filled-in puzzles will parse
+           Patch from Ed Santiago
+         - Removed get_solution_two() - Not used
+         - Removed get_nonstandard()  - Not used
+         - Removed set_nonstandard()  - Not used
