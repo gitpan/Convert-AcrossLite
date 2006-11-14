@@ -5,7 +5,7 @@ use strict;
 use Carp;
 use vars qw($VERSION);
 
-$VERSION = '0.09';
+$VERSION = '0.10';
 
 sub new {
   my $class = shift;

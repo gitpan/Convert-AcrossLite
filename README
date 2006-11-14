@@ -1,4 +1,4 @@
-Convert/AcrossLite version 0.09
+Convert/AcrossLite version 0.10
 ===============================
 NAME
     Convert::AcrossLite - Convert binary AcrossLite puzzle files to text.
@@ -306,9 +306,9 @@ OTHER
     8. Do not make up words and phrases.  Every answer must have a reference or else be in common use in everyday speech or writing.
     9. (Modern rule) The vocabulary in a crossword must be lively and have very little obscurity.
 
-=head1 ACKNOWLEDGEMENTS
+ACKNOWLEDGEMENTS
 
-Changed C<eq '-'> to C<ne '.'> so filled-in puzzles will parse
+Changed <eq '-'> to <ne '.'> so filled-in puzzles will parse
 Patch from Ed Santiago
 
 AUTHOR
